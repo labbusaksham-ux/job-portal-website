@@ -1,0 +1,5 @@
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=Saksham@06
+DB_NAME=job_portal
+SECRET_KEY=change-this-to-a-long-random-secret

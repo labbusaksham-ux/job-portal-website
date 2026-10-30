@@ -1,0 +1,449 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Applicants | JobPortal</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5fb;
+            color: #1e293b;
+        }
+
+        .navbar {
+            background: #102f56;
+            padding: 20px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: white;
+            text-decoration: none;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #60a5fa;
+        }
+
+        .back-btn {
+            background: #2563eb;
+            color: white;
+            padding: 11px 17px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1100px;
+            width: 92%;
+            margin: 35px auto 60px;
+        }
+
+        .page-header {
+            background: linear-gradient(120deg, #164579, #2879c7);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+
+        .page-header h1 {
+            font-size: 27px;
+            margin-bottom: 12px;
+        }
+
+        .page-header p {
+            color: #dbeafe;
+            margin-bottom: 8px;
+        }
+
+        .applicant-count {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 14px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .applicant-card {
+            background: white;
+            padding: 26px;
+            margin-bottom: 20px;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 5px 20px rgba(15,23,42,0.05);
+        }
+
+        .applicant-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e8eef6;
+        }
+
+        .applicant-card h2 {
+            color: #174878;
+            font-size: 21px;
+            margin-bottom: 7px;
+        }
+
+        .email {
+            color: #64748b;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+        .status {
+            display: inline-block;
+            background: #fff7db;
+            color: #946200;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .detail {
+            background: #f8fafc;
+            padding: 16px;
+            border: 1px solid #edf0f5;
+            border-radius: 9px;
+            overflow-wrap: anywhere;
+        }
+
+        .detail strong {
+            display: block;
+            color: #334155;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .detail span {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .status-section {
+            margin-top: 22px;
+            padding-top: 20px;
+            border-top: 1px solid #e8eef6;
+        }
+
+        .status-section h3 {
+            color: #174878;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+
+        .status-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-select {
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            min-width: 160px;
+        }
+
+        .update-btn {
+            background: #2563eb;
+            color: white;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .update-btn:hover {
+            background: #1747ae;
+        }
+
+        .resume-section {
+            margin-top: 20px;
+        }
+
+        .resume-btn {
+            display: inline-block;
+            background: #0f766e;
+            color: white;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .no-resume {
+            color: #dc2626;
+            font-size: 13px;
+        }
+
+        .empty {
+            background: white;
+            padding: 50px 20px;
+            text-align: center;
+            border-radius: 14px;
+            border: 1px dashed #b7c9df;
+        }
+
+        .empty h2 {
+            color: #174878;
+            margin-bottom: 10px;
+        }
+
+        .empty p {
+            color: #64748b;
+        }
+
+        footer {
+            background: #102f56;
+            text-align: center;
+            padding: 25px;
+            color: #dbeafe;
+            font-size: 13px;
+        }
+
+        @media(max-width: 600px) {
+            .navbar {
+                padding: 17px 4%;
+            }
+
+            .logo {
+                font-size: 21px;
+            }
+
+            .container {
+                width: 94%;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .applicant-card {
+                padding: 19px;
+            }
+
+            .page-header h1 {
+                font-size: 23px;
+            }
+
+            .status-form {
+                flex-direction: column;
+            }
+
+            .status-select,
+            .update-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <a href="{{ url_for('recruiter_dashboard') }}" class="logo">
+        Job<span>Portal.</span>
+    </a>
+
+    <a href="{{ url_for('recruiter_dashboard') }}" class="back-btn">
+        ← Dashboard
+    </a>
+</nav>
+
+<div class="container">
+
+    <section class="page-header">
+        <h1>👥 Job Applicants</h1>
+
+        <p>Job Position: {{ job.title }}</p>
+        <p>Review candidate profiles and resumes.</p>
+
+        <span class="applicant-count">
+            Total Applicants: {{ applicants|length }}
+        </span>
+    </section>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div style="background:#dcfce7;color:#166534;
+                            padding:13px;border-radius:8px;
+                            margin-bottom:18px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if applicants %}
+
+        {% for applicant in applicants %}
+
+        <div class="applicant-card">
+
+            <div class="applicant-top">
+                <div>
+                    <h2>👤 {{ applicant.name }}</h2>
+                    <p class="email">{{ applicant.email }}</p>
+                </div>
+
+                <span class="status">
+                    {{ applicant.status or "Pending" }}
+                </span>
+            </div>
+
+            <div class="details-grid">
+
+                <div class="detail">
+                    <strong>📞 Phone Number</strong>
+                    <span>{{ applicant.phone or "Not Provided" }}</span>
+                </div>
+
+                <div class="detail">
+                    <strong>📍 Location</strong>
+                    <span>{{ applicant.location or "Not Provided" }}</span>
+                </div>
+
+                <div class="detail">
+                    <strong>🎓 Qualification</strong>
+                    <span>{{ applicant.qualification or "Not Provided" }}</span>
+                </div>
+
+                <div class="detail">
+                    <strong>🏫 College Name</strong>
+                    <span>{{ applicant.college or "Not Provided" }}</span>
+                </div>
+
+                <div class="detail">
+                    <strong>📅 Passing Year</strong>
+                    <span>{{ applicant.passing_year or "Not Provided" }}</span>
+                </div>
+
+                <div class="detail">
+                    <strong>💼 Experience</strong>
+                    <span>{{ applicant.experience or "Not Provided" }}</span>
+                </div>
+
+                <div class="detail" style="grid-column:1 / -1;">
+                    <strong>⚡ Skills</strong>
+                    <span>{{ applicant.skills or "Not Provided" }}</span>
+                </div>
+
+            </div>
+
+            <div class="status-section">
+
+                <h3>Update Application Status</h3>
+
+                <form class="status-form"
+                      method="POST"
+                      action="{{ url_for('update_application_status', application_id=applicant.id) }}">
+
+                    <select name="status" class="status-select" required>
+
+                        <option value="Pending"
+                            {% if applicant.status == 'Pending' %}selected{% endif %}>
+                            Pending
+                        </option>
+
+                        <option value="Shortlisted"
+                            {% if applicant.status == 'Shortlisted' %}selected{% endif %}>
+                            Shortlisted
+                        </option>
+
+                        <option value="Rejected"
+                            {% if applicant.status == 'Rejected' %}selected{% endif %}>
+                            Rejected
+                        </option>
+
+                        <option value="Selected"
+                            {% if applicant.status == 'Selected' %}selected{% endif %}>
+                            Selected
+                        </option>
+
+                    </select>
+
+                    <button type="submit" class="update-btn">
+                        Update Status
+                    </button>
+
+                </form>
+
+            </div>
+
+            <div class="resume-section">
+
+                {% if applicant.resume_filename %}
+
+                    <a class="resume-btn"
+                       href="{{ url_for('static', filename='resumes/' ~ applicant.resume_filename) }}"
+                       target="_blank">
+                        📄 View / Download Resume
+                    </a>
+
+                {% else %}
+
+                    <span class="no-resume">
+                        Resume not uploaded.
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty">
+            <h2>No Applicants Yet</h2>
+            <p>No candidates have applied for this job.</p>
+        </div>
+
+    {% endif %}
+
+</div>
+
+<footer>
+    JobPortal. © 2026 All Rights Reserved.
+</footer>
+
+</body>
+</html>

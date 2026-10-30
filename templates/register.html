@@ -1,0 +1,254 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Account | Job Portal</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #102f68, #2563eb, #60a5fa);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .register-navbar {
+            background: white;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .register-navbar .logo {
+            color: #173b76;
+            font-size: 25px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .register-navbar .logo span {
+            color: #3478f6;
+        }
+
+        .register-navbar a:last-child {
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .register-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 35px 15px;
+        }
+
+        .register-box {
+            width: 100%;
+            max-width: 460px;
+            background: white;
+            padding: 35px;
+            border-radius: 18px;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.18);
+        }
+
+        .register-icon {
+            width: 65px;
+            height: 65px;
+            background: #eff6ff;
+            color: #2563eb;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 18px;
+        }
+
+        .register-box h2 {
+            text-align: center;
+            color: #172554;
+            font-size: 27px;
+            margin-bottom: 8px;
+        }
+
+        .register-subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 23px;
+        }
+
+        .register-box label {
+            display: block;
+            color: #334155;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 13px;
+        }
+
+        .register-box input,
+        .register-box select {
+            width: 100%;
+            padding: 13px;
+            margin-top: 7px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+            box-sizing: border-box;
+        }
+
+        .register-box input:focus,
+        .register-box select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+        }
+
+        .register-button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 23px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .register-button:hover {
+            background: #1747ae;
+        }
+
+        .register-message {
+            background: #eff6ff;
+            color: #1e40af;
+            padding: 11px;
+            border-radius: 7px;
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .login-text {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 22px;
+        }
+
+        .login-text a {
+            color: #2563eb;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .login-text a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .register-box {
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="register-navbar">
+
+    <a href="{{ url_for('login') }}" class="logo">
+        Job<span>Portal.</span>
+    </a>
+
+    <a href="{{ url_for('login') }}">Login</a>
+
+</header>
+
+<div class="register-wrapper">
+
+    <div class="register-box">
+
+        <div class="register-icon">✦</div>
+
+        <h2>Create Your Account</h2>
+
+        <p class="register-subtitle">
+            Join Job Portal and start your career journey.
+        </p>
+
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+                <div class="register-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST">
+
+            <label>Full Name</label>
+
+            <input
+                type="text"
+                name="name"
+                placeholder="Enter your full name"
+                required
+            >
+
+            <label>Email Address</label>
+
+            <input
+                type="email"
+                name="email"
+                placeholder="Enter your email address"
+                required
+            >
+
+            <label>Password</label>
+
+            <input
+                type="password"
+                name="password"
+                placeholder="Minimum 8 characters"
+                minlength="8"
+                required
+            >
+
+            <label>Register As</label>
+
+            <select name="role" required>
+                <option value="candidate">Candidate - Looking for a Job</option>
+                <option value="recruiter">Recruiter - Hiring Employees</option>
+            </select>
+
+            <button type="submit" class="register-button">
+                Create Account →
+            </button>
+
+        </form>
+
+        <p class="login-text">
+            Already have an account?
+            <a href="{{ url_for('login') }}">Login Here</a>
+        </p>
+
+    </div>
+
+</div>
+
+</body>
+</html>

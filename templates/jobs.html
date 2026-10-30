@@ -1,0 +1,302 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Available Jobs | Job Portal</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .jobs-header {
+            background: linear-gradient(120deg, #102f68, #2563eb);
+            color: white;
+            padding: 45px 7%;
+        }
+
+        .jobs-header h1 {
+            color: white;
+            font-size: 35px;
+            margin-bottom: 8px;
+        }
+
+        .jobs-header p {
+            color: #dbeafe;
+        }
+
+        .jobs-page-container {
+            max-width: 1150px;
+            width: 90%;
+            margin: 35px auto 60px;
+        }
+
+        .results-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .results-heading h2 {
+            color: #172554;
+            font-size: 25px;
+        }
+
+        .results-heading p {
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .job-list-card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 13px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 16px rgba(15,23,42,0.04);
+            transition: 0.3s;
+        }
+
+        .job-list-card:hover {
+            transform: translateY(-4px);
+            border-color: #bfdbfe;
+            box-shadow: 0 10px 25px rgba(37,99,235,0.10);
+        }
+
+        .job-list-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .job-list-card h2 {
+            color: #172554;
+            font-size: 23px;
+            margin-bottom: 8px;
+        }
+
+        .company-label {
+            color: #2563eb;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .job-list-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 22px;
+            padding: 14px 0;
+            border-top: 1px solid #edf0f5;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        .job-list-info p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .job-list-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 18px;
+        }
+
+        .salary-text {
+            color: #15803d;
+            font-weight: 700;
+        }
+
+        .job-type-badge {
+            background: #eff6ff;
+            color: #2563eb;
+            padding: 7px 13px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .jobs-back {
+            display: inline-block;
+            margin-top: 20px;
+            color: #2563eb;
+            font-weight: 700;
+        }
+
+        .empty-jobs {
+            background: white;
+            padding: 50px 20px;
+            text-align: center;
+            border-radius: 13px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .empty-jobs h2 {
+            color: #172554;
+            margin-bottom: 10px;
+        }
+
+        .empty-jobs p {
+            color: #64748b;
+        }
+
+        @media (max-width: 600px) {
+            .jobs-header {
+                padding: 35px 18px;
+            }
+
+            .jobs-header h1 {
+                font-size: 28px;
+            }
+
+            .jobs-page-container {
+                width: 92%;
+            }
+
+            .job-list-card {
+                padding: 20px;
+            }
+
+            .job-list-info {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <a href="{{ url_for('home') }}" class="logo">
+        Job<span>Portal.</span>
+    </a>
+
+    <div class="nav-links">
+
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('search_jobs') }}">Browse Jobs</a>
+        <a href="{{ url_for('candidate_profile') }}">My Profile</a>
+        <a href="{{ url_for('my_applications') }}">My Applications</a>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+
+    </div>
+
+</nav>
+
+<section class="jobs-header">
+
+    <h1>Explore Career Opportunities</h1>
+
+    <p>
+        Find the right job and take the next step in your career.
+    </p>
+
+</section>
+
+<div class="jobs-page-container">
+
+    <div class="results-heading">
+
+        <div>
+            <h2>Available Jobs</h2>
+
+            <p>
+                Search Results:
+                {{ keyword if keyword else "All Jobs" }}
+            </p>
+        </div>
+
+        <a href="{{ url_for('home') }}" class="view-all">
+            ← Back to Home
+        </a>
+
+    </div>
+
+    {% for job in jobs %}
+
+    <div class="job-list-card">
+
+        <div class="job-list-top">
+
+            <span class="job-type-badge">
+                {{ job.type or "Not Specified" }}
+            </span>
+
+        </div>
+
+        <h2>{{ job.title }}</h2>
+
+        <p class="company-label">
+            {{ job.company or "Company" }}
+        </p>
+
+        <div class="job-list-info">
+
+            <p>📍 {{ job.location or "Not Specified" }}</p>
+
+            <p>💼 {{ job.type or "Not Specified" }}</p>
+
+        </div>
+
+        <div class="job-list-footer">
+
+            <span class="salary-text">
+                💰 {{ job.salary or "Salary Not Disclosed" }}
+            </span>
+
+            <a href="{{ url_for('job_detail', job_id=job.id) }}"
+               class="details-btn">
+                View Details →
+            </a>
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-jobs">
+
+        <div style="font-size: 45px;">🔍</div>
+
+        <h2>No Jobs Found!</h2>
+
+        <p>
+            We couldn't find any jobs matching your search.
+            Try another keyword or location.
+        </p>
+
+        <a href="{{ url_for('search_jobs') }}" class="details-btn"
+           style="margin-top: 20px;">
+            Search Again
+        </a>
+
+    </div>
+
+    {% endfor %}
+
+    <a href="{{ url_for('home') }}" class="jobs-back">
+        ← Back to Home
+    </a>
+
+</div>
+
+<footer>
+    <h3>JobPortal.</h3>
+    <p>Connecting talented people with great opportunities.</p>
+    <p class="copyright">© 2026 Job Portal. All Rights Reserved.</p>
+</footer>
+
+</body>
+</html>

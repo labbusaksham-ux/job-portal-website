@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ job.title }} | JobPortal</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f1f5fb;
+            color: #1e293b;
+            font-family: Arial, sans-serif;
+        }
+
+        .detail-header {
+            background: linear-gradient(120deg, #102f68, #2563eb);
+            padding: 55px 7%;
+            color: white;
+        }
+
+        .header-content {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .detail-header h1 {
+            color: white;
+            font-size: 36px;
+            margin: 8px 0 12px;
+        }
+
+        .detail-header p {
+            color: #dbeafe;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .detail-container {
+            max-width: 1100px;
+            width: 90%;
+            margin: 35px auto 60px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .detail-main,
+        .detail-sidebar {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 25px rgba(15,23,42,0.05);
+        }
+
+        .detail-badge {
+            display: inline-block;
+            background: #eff6ff;
+            color: #2563eb;
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .detail-main h2 {
+            color: #102f68;
+            font-size: 23px;
+            margin: 28px 0 15px;
+        }
+
+        .detail-main p {
+            color: #64748b;
+            font-size: 15px;
+            line-height: 1.9;
+            overflow-wrap: anywhere;
+        }
+
+        .detail-sidebar h3 {
+            color: #102f68;
+            font-size: 21px;
+            margin: 0 0 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        .detail-item strong {
+            display: block;
+            color: #334155;
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        .detail-item span {
+            color: #64748b;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+        .apply-btn {
+            display: block;
+            width: 100%;
+            margin-top: 25px;
+            padding: 15px;
+            border: none;
+            border-radius: 9px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .apply-btn:hover {
+            background: #1747ae;
+            transform: translateY(-2px);
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #2563eb;
+            font-weight: bold;
+            margin-top: 30px;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .flash {
+            background: #eff6ff;
+            color: #1e40af;
+            padding: 14px;
+            border-radius: 9px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #2563eb;
+        }
+
+        .info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 9px;
+            margin-top: 20px;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        footer {
+            text-align: center;
+            background: #102f68;
+            color: white;
+            padding: 30px 15px;
+        }
+
+        footer h3 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        footer p {
+            color: #dbeafe;
+            font-size: 14px;
+        }
+
+        @media (max-width: 750px) {
+            .detail-container {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-header {
+                padding: 40px 20px;
+            }
+
+            .detail-header h1 {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .detail-main,
+            .detail-sidebar {
+                padding: 22px;
+            }
+
+            .detail-container {
+                width: 94%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <a href="{{ url_for('home') }}" class="logo">
+        Job<span>Portal.</span>
+    </a>
+
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('search_jobs') }}">Browse Jobs</a>
+        <a href="{{ url_for('candidate_profile') }}">My Profile</a>
+        <a href="{{ url_for('my_applications') }}">My Applications</a>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+</nav>
+
+<section class="detail-header">
+    <div class="header-content">
+
+        <span class="header-badge">JOB OPPORTUNITY</span>
+
+        <h1>{{ job.title }}</h1>
+
+        <p>
+            🏢 {{ job.company_name or job.company or "Company" }}
+            &nbsp; | &nbsp;
+            📍 {{ job.location or "Location Not Specified" }}
+        </p>
+
+    </div>
+</section>
+
+<div class="detail-container">
+
+    <main class="detail-main">
+
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+                <div class="flash">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <span class="detail-badge">
+            {{ job.job_type or job.type or "Not Specified" }}
+        </span>
+
+        <h2>About This Job</h2>
+
+        <p>
+            {{ job.description or "No job description provided." }}
+        </p>
+
+        <h2>Why Apply for This Job?</h2>
+
+        <p>
+            Explore this opportunity and share your professional details
+            with the recruiter. Make sure your profile and resume are
+            up to date before submitting your application.
+        </p>
+
+        <a href="{{ url_for('search_jobs') }}" class="back-link">
+            ← Back to Available Jobs
+        </a>
+
+    </main>
+
+    <aside class="detail-sidebar">
+
+        <h3>Job Overview</h3>
+
+        <div class="detail-item">
+            <strong>🏢 Company</strong>
+            <span>{{ job.company_name or job.company or "Company" }}</span>
+        </div>
+
+        <div class="detail-item">
+            <strong>📍 Location</strong>
+            <span>{{ job.location or "Not Specified" }}</span>
+        </div>
+
+        <div class="detail-item">
+            <strong>💰 Salary</strong>
+            <span>{{ job.salary or "Not Disclosed" }}</span>
+        </div>
+
+        <div class="detail-item">
+            <strong>💼 Job Type</strong>
+            <span>{{ job.job_type or job.type or "Not Specified" }}</span>
+        </div>
+
+        <form method="GET"
+              action="{{ url_for('apply_job', job_id=job.id) }}">
+
+            <button type="submit" class="apply-btn">
+                Apply for This Job →
+            </button>
+
+        </form>
+
+        <div class="info-box">
+            <strong>Application Tip</strong>
+            <p>
+                Keep your contact information, qualification,
+                skills and PDF resume ready before applying.
+            </p>
+        </div>
+
+    </aside>
+
+</div>
+
+<footer>
+    <h3>JobPortal.</h3>
+    <p>Connecting talented people with great opportunities.</p>
+    <p>© 2026 Job Portal. All Rights Reserved.</p>
+</footer>
+
+</body>
+</html>

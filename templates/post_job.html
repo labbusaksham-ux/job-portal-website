@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a Job</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 30px 15px;
+            font-family: Arial, sans-serif;
+            background: #f2f5fa;
+        }
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px #00000012;
+        }
+        h1 { color: #123c69; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 7px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        textarea { min-height: 120px; resize: vertical; }
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            background: #123c69;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .back { color: #123c69; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="{{ url_for('recruiter_dashboard') }}" class="back">← Back to Dashboard</a>
+
+    <h1>Post a New Job</h1>
+    <p>Enter the job details below.</p>
+
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+
+        <label>Job Title</label>
+        <input type="text" name="title" placeholder="Python Developer" required>
+
+        <label>Company Name</label>
+        <input type="text" name="company_name" placeholder="Your Company" required>
+
+        <label>Location</label>
+        <input type="text" name="location" placeholder="Noida" required>
+
+        <label>Salary</label>
+        <input type="text" name="salary" placeholder="3 LPA" required>
+
+        <label>Job Type</label>
+        <select name="job_type" required>
+            <option value="">Select Job Type</option>
+            <option value="Full Time">Full Time</option>
+            <option value="Part Time">Part Time</option>
+            <option value="Internship">Internship</option>
+        </select>
+
+        <label>Job Description</label>
+        <textarea name="description" placeholder="Enter job responsibilities and requirements..." required></textarea>
+
+        <button type="submit">Publish Job</button>
+    </form>
+</div>
+
+</body>
+</html>

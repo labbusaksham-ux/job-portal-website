@@ -1,0 +1,351 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Job | JobPortal</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        body {
+            background: #f1f5fb;
+            color: #1e293b;
+        }
+
+        .apply-header {
+            background: linear-gradient(120deg, #102f68, #2563eb);
+            color: white;
+            padding: 40px 7%;
+        }
+
+        .apply-header h1 {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .apply-header p {
+            color: #dbeafe;
+        }
+
+        .apply-container {
+            max-width: 850px;
+            width: 92%;
+            margin: 35px auto 60px;
+            background: white;
+            padding: 35px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.07);
+        }
+
+        .job-summary {
+            background: #eff6ff;
+            border: 1px solid #dbeafe;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 28px;
+        }
+
+        .job-summary h3 {
+            color: #1d4ed8;
+            margin-bottom: 7px;
+        }
+
+        .job-summary p {
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .form-heading {
+            color: #102f68;
+            font-size: 21px;
+            margin-bottom: 22px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+            box-sizing: border-box;
+            color: #1e293b;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group input[readonly] {
+            background: #f8fafc;
+            color: #64748b;
+        }
+
+        .file-note {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 9px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #1747ae;
+        }
+
+        .cancel-link {
+            display: block;
+            text-align: center;
+            margin-top: 18px;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .flash-message {
+            background: #fff1f2;
+            color: #be123c;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+        }
+
+        @media(max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .apply-container {
+                padding: 22px;
+            }
+
+            .apply-header h1 {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <a href="{{ url_for('home') }}" class="logo">
+        Job<span>Portal.</span>
+    </a>
+
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('search_jobs') }}">Browse Jobs</a>
+        <a href="{{ url_for('candidate_profile') }}">My Profile</a>
+        <a href="{{ url_for('my_applications') }}">My Applications</a>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+</nav>
+
+<section class="apply-header">
+    <h1>Complete Your Job Application</h1>
+    <p>Share your details and take the next step in your career.</p>
+</section>
+
+<div class="apply-container">
+
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <div class="flash-message">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <div class="job-summary">
+        <h3>{{ job.title }}</h3>
+        <p>
+            {{ job.company_name or "Company" }}
+            &nbsp; | &nbsp;
+            {{ job.location or "Location not specified" }}
+            &nbsp; | &nbsp;
+            {{ job.salary or "Salary not disclosed" }}
+        </p>
+    </div>
+
+    <h2 class="form-heading">Personal & Professional Details</h2>
+
+    <form method="POST"
+          enctype="multipart/form-data"
+          action="{{ url_for('apply_job', job_id=job.id) }}">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text"
+                       value="{{ user_name }}"
+                       readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Email Address *</label>
+                <input type="email"
+                       value="{{ user_email }}"
+                       readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number *</label>
+                <input type="tel"
+                       name="phone"
+                       placeholder="Enter your phone number"
+                       value="{{ profile.phone if profile else '' }}"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Current Location *</label>
+                <input type="text"
+                       name="location"
+                       placeholder="City, State"
+                       value="{{ profile.location if profile else '' }}"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Highest Qualification *</label>
+                <input type="text"
+                       name="qualification"
+                       placeholder="Example: BCA"
+                       value="{{ profile.qualification if profile else '' }}"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>College / University *</label>
+                <input type="text"
+                       name="college"
+                       placeholder="Enter college name"
+                       value="{{ profile.college if profile else '' }}"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Passing Year *</label>
+                <input type="text"
+                       name="passing_year"
+                       placeholder="Example: 2026"
+                       value="{{ profile.passing_year if profile else '' }}"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Experience *</label>
+                <select name="experience" required>
+                    <option value="">Select Experience</option>
+                    <option value="Fresher"
+                        {% if profile and profile.experience == "Fresher" %}selected{% endif %}>
+                        Fresher
+                    </option>
+                    <option value="0-1 Year"
+                        {% if profile and profile.experience == "0-1 Year" %}selected{% endif %}>
+                        0-1 Year
+                    </option>
+                    <option value="1-2 Years"
+                        {% if profile and profile.experience == "1-2 Years" %}selected{% endif %}>
+                        1-2 Years
+                    </option>
+                    <option value="2+ Years"
+                        {% if profile and profile.experience == "2+ Years" %}selected{% endif %}>
+                        2+ Years
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group full">
+                <label>Skills *</label>
+                <textarea name="skills"
+                          placeholder="Example: Python, Flask, MySQL, HTML, CSS"
+                          required>{{ profile.skills if profile else '' }}</textarea>
+            </div>
+
+            <div class="form-group full">
+                <label>Upload Resume (PDF) *</label>
+                <input type="file"
+                       name="resume"
+                       accept=".pdf,application/pdf"
+                       {% if not profile or not profile.resume_filename %}required{% endif %}>
+                <p class="file-note">
+                    Maximum file size: 5 MB. Only PDF files are accepted.
+                    {% if profile and profile.resume_filename %}
+                        Existing resume is saved. Upload a new PDF only if you want to replace it.
+                    {% endif %}
+                </p>
+            </div>
+
+        </div>
+
+        <button type="submit" class="submit-btn">
+            Submit Application →
+        </button>
+
+    </form>
+
+    <a href="{{ url_for('job_detail', job_id=job.id) }}"
+       class="cancel-link">
+        ← Back to Job Details
+    </a>
+
+</div>
+
+<footer>
+    <h3>JobPortal.</h3>
+    <p>Connecting talented people with great opportunities.</p>
+    <p class="copyright">© 2026 Job Portal. All Rights Reserved.</p>
+</footer>
+
+</body>
+</html>

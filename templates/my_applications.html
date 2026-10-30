@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Applications | Job Portal</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .page-header {
+            background: linear-gradient(120deg, #123c78, #1765c1);
+            color: white;
+            padding: 22px 7%;
+        }
+
+        .page-header h2 {
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 25px;
+        }
+
+        .heading {
+            margin-bottom: 28px;
+        }
+
+        h1 {
+            color: #123c78;
+            margin: 0 0 10px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .application-card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px #00000008;
+            transition: 0.2s;
+        }
+
+        .application-card:hover {
+            box-shadow: 0 7px 20px #00000012;
+            transform: translateY(-2px);
+        }
+
+        .application-card h2 {
+            color: #123c78;
+            margin: 0 0 18px;
+        }
+
+        .application-card p {
+            color: #475569;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .status {
+            display: inline-block;
+            background: #fff7db;
+            color: #946200;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .details-btn {
+            display: inline-block;
+            margin-top: 15px;
+            background: #1765c1;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .details-btn:hover {
+            background: #0e4d99;
+        }
+
+        .empty {
+            background: white;
+            padding: 45px 25px;
+            text-align: center;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .empty h2 {
+            color: #123c78;
+            margin-top: 0;
+        }
+
+        .empty p {
+            color: #64748b;
+        }
+
+        .browse-btn {
+            display: inline-block;
+            margin-top: 12px;
+            background: #1765c1;
+            color: white;
+            padding: 12px 22px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #1765c1;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 22px;
+            color: #64748b;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 20px auto;
+                padding: 15px;
+            }
+
+            .application-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="page-header">
+    <h2>Job Portal</h2>
+</header>
+
+<div class="container">
+
+    <div class="heading">
+        <h1>My Applications</h1>
+        <p class="subtitle">
+            Track the status of jobs you have applied for.
+        </p>
+    </div>
+
+    {% if applications %}
+
+        {% for application in applications %}
+
+        <div class="application-card">
+
+            <h2>{{ application.title }}</h2>
+
+            <p>
+                <strong>Company:</strong>
+                {{ application.company_name or "Company" }}
+            </p>
+
+            <p>
+                <strong>Location:</strong>
+                {{ application.location or "Not Specified" }}
+            </p>
+
+            <p>
+                <strong>Salary:</strong>
+                {{ application.salary or "Not Disclosed" }}
+            </p>
+
+            <p>
+                <strong>Job Type:</strong>
+                {{ application.job_type or "Not Specified" }}
+            </p>
+
+            <p>
+                <strong>Application Status:</strong>
+                <span class="status">
+                    {{ application.status }}
+                </span>
+            </p>
+
+            <a class="details-btn"
+               href="{{ url_for('job_detail', job_id=application.job_id) }}">
+                View Job Details →
+            </a>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty">
+            <h2>No Applications Yet</h2>
+            <p>You have not applied for any jobs yet.</p>
+
+            <a class="browse-btn" href="{{ url_for('search_jobs') }}">
+                Browse Jobs
+            </a>
+        </div>
+
+    {% endif %}
+
+    <a class="back-link" href="{{ url_for('home') }}">
+        ← Back to Home
+    </a>
+
+</div>
+
+<footer>
+    © 2026 Job Portal. All Rights Reserved.
+</footer>
+
+</body>
+</html>

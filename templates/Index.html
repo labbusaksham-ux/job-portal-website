@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Job Portal | Find Your Dream Job</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<nav class="navbar">
+    <a href="{{ url_for('home') }}" class="logo">Job<span>Portal.</span></a>
+
+    <div class="nav-links">
+        {% if session.get('user_id') %}
+
+            <a href="{{ url_for('home') }}">Home</a>
+
+            {% if session.get('user_role') == 'candidate' %}
+                <a href="{{ url_for('search_jobs') }}">Browse Jobs</a>
+                <a href="{{ url_for('candidate_profile') }}">My Profile</a>
+                <a href="{{ url_for('my_applications') }}">My Applications</a>
+            {% endif %}
+
+            {% if session.get('user_role') == 'recruiter' %}
+                <a href="{{ url_for('recruiter_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('post_job') }}">Post a Job</a>
+            {% endif %}
+
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}" class="nav-register">Register</a>
+        {% endif %}
+    </div>
+</nav>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="flash-message">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<section class="hero">
+
+    <div class="hero-content">
+        <span class="hero-tag">YOUR CAREER STARTS HERE</span>
+
+        <h1>Find Your <span>Dream Job</span><br>Build Your Future</h1>
+
+        <p>
+            Discover thousands of job opportunities.
+            Connect with top companies and take the next step in your career.
+        </p>
+
+        {% if session.get('user_role') == 'candidate' %}
+
+            <form action="{{ url_for('search_jobs') }}"
+                  method="GET"
+                  class="search-box">
+
+                <input type="text"
+                       name="keyword"
+                       placeholder="Job title or keyword">
+
+                <input type="text"
+                       name="location"
+                       placeholder="Enter location">
+
+                <select name="job_type">
+                    <option value="">All Job Types</option>
+                    <option value="Full Time">Full Time</option>
+                    <option value="Part Time">Part Time</option>
+                    <option value="Internship">Internship</option>
+                </select>
+
+                <button type="submit">Search Jobs →</button>
+            </form>
+
+        {% endif %}
+
+        <div class="hero-note">
+            ✓ Easy Job Search
+            <span>✓ Career Opportunities</span>
+            <span>✓ Trusted Platform</span>
+        </div>
+    </div>
+
+</section>
+
+{% if session.get('user_role') == 'candidate' %}
+
+<section class="jobs-section">
+
+    <div class="section-heading">
+        <div>
+            <span class="section-tag">CAREER OPPORTUNITIES</span>
+            <h2>Latest Job Openings</h2>
+            <p>Explore the latest opportunities and find your perfect role.</p>
+        </div>
+
+        <a href="{{ url_for('search_jobs') }}" class="view-all">
+            View All Jobs →
+        </a>
+    </div>
+
+    {% if jobs %}
+
+    <div class="jobs-container">
+
+        {% for job in jobs %}
+
+        <div class="job-card">
+
+            <div class="job-card-top">
+                <span class="job-type">
+                    {{ job.job_type or "Not Specified" }}
+                </span>
+                <span class="job-icon">💼</span>
+            </div>
+
+            <h3>{{ job.title }}</h3>
+
+            <p class="company-name">
+                {{ job.company_name or "Company" }}
+            </p>
+
+            <div class="job-info">
+                <p>📍 {{ job.location or "Not Specified" }}</p>
+                <p>💰 {{ job.salary or "Not Disclosed" }}</p>
+            </div>
+
+            <div class="job-card-footer">
+                <a href="{{ url_for('job_detail', job_id=job.id) }}"
+                   class="details-btn">
+                    View Details →
+                </a>
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="no-jobs">
+        <div class="empty-icon">📂</div>
+        <h3>No Jobs Available Right Now</h3>
+        <p>Please check again later for new opportunities.</p>
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endif %}
+
+<section class="bottom-banner">
+    <h2>Ready to Take the Next Step?</h2>
+    <p>Your dream career could be just one application away.</p>
+    {% if session.get('user_role') == 'candidate' %}
+        <a href="{{ url_for('search_jobs') }}" class="banner-btn">
+            Explore Jobs →
+        </a>
+    {% endif %}
+</section>
+
+<footer>
+    <h3>JobPortal.</h3>
+    <p>Connecting talented people with great opportunities.</p>
+    <p class="copyright">© 2026 Job Portal. All Rights Reserved.</p>
+</footer>
+
+</body>
+</html>

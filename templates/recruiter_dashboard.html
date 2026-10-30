@@ -1,0 +1,464 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiter Dashboard | JobPortal</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #102f56;
+            color: white;
+            padding: 30px 20px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 800;
+            margin-bottom: 45px;
+        }
+
+        .logo span {
+            color: #60a5fa;
+        }
+
+        .menu-title {
+            color: #9bb4d2;
+            font-size: 12px;
+            margin: 25px 10px 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .menu a {
+            display: block;
+            padding: 14px;
+            color: #dbeafe;
+            text-decoration: none;
+            border-radius: 9px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .menu a:hover,
+        .menu a.active {
+            background: #24558c;
+            color: white;
+        }
+
+        .main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 30px 40px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            gap: 15px;
+        }
+
+        .topbar h2 {
+            font-size: 25px;
+            color: #142e4d;
+        }
+
+        .profile {
+            background: white;
+            padding: 10px 18px;
+            border-radius: 30px;
+            box-shadow: 0 3px 15px #142e4d10;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .welcome {
+            background: linear-gradient(120deg, #164579, #2879c7);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+        }
+
+        .welcome h1 {
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        .welcome p {
+            color: #dbeafe;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px #142e4d08;
+            border: 1px solid #e8eef6;
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            background: #e8f2ff;
+            color: #2465a5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 22px;
+            margin-bottom: 18px;
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+            margin-bottom: 7px;
+            color: #173b63;
+        }
+
+        .stat-card p {
+            color: #718096;
+            font-size: 13px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        .section-header h2 {
+            font-size: 21px;
+            color: #173b63;
+        }
+
+        .post-btn {
+            background: #2167ad;
+            color: white;
+            text-decoration: none;
+            padding: 12px 19px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .post-btn:hover {
+            background: #164579;
+        }
+
+        .job-card {
+            background: white;
+            padding: 24px;
+            border-radius: 13px;
+            margin-bottom: 17px;
+            border: 1px solid #e8eef6;
+            box-shadow: 0 3px 15px #142e4d08;
+            transition: 0.3s;
+        }
+
+        .job-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px #142e4d12;
+        }
+
+        .job-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .job-card h3 {
+            color: #174878;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .company {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .status {
+            background: #e4f8ec;
+            color: #16834a;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .job-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .description {
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-top: 17px;
+        }
+
+        .job-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #edf0f5;
+        }
+
+        .applicants-btn {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            padding: 11px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        .applicants-btn:hover {
+            background: #1747ae;
+        }
+
+        .empty {
+            background: white;
+            padding: 45px 20px;
+            text-align: center;
+            border-radius: 14px;
+            border: 1px dashed #b7c9df;
+        }
+
+        .empty h3 {
+            color: #174878;
+            margin-bottom: 10px;
+        }
+
+        .empty p {
+            color: #718096;
+            margin-bottom: 22px;
+            font-size: 14px;
+        }
+
+        @media(max-width: 850px) {
+            .sidebar {
+                width: 190px;
+            }
+
+            .main {
+                margin-left: 190px;
+                width: calc(100% - 190px);
+                padding: 25px 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width: 600px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+
+            .logo {
+                margin-bottom: 15px;
+            }
+
+            .menu-title {
+                display: none;
+            }
+
+            .menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+
+            .menu a {
+                padding: 9px;
+                font-size: 12px;
+                margin: 0;
+            }
+
+            .layout {
+                display: block;
+            }
+
+            .main {
+                margin-left: 0;
+                width: 100%;
+                padding: 20px 14px;
+            }
+
+            .topbar h2 {
+                font-size: 20px;
+            }
+
+            .welcome h1 {
+                font-size: 21px;
+            }
+
+            .section-header {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <div class="logo">Job<span>Portal.</span></div>
+
+        <div class="menu-title">Main Menu</div>
+
+        <div class="menu">
+            <a href="{{ url_for('recruiter_dashboard') }}" class="active">▦ Dashboard</a>
+            <a href="{{ url_for('post_job') }}">＋ Post a Job</a>
+            <a href="{{ url_for('home') }}">⌂ Visit Website</a>
+            <a href="{{ url_for('logout') }}">↪ Logout</a>
+        </div>
+    </aside>
+
+    <main class="main">
+
+        <div class="topbar">
+            <h2>Recruiter Dashboard</h2>
+            <div class="profile">👤 {{ session.get('user_name') }}</div>
+        </div>
+
+        <section class="welcome">
+            <h1>Welcome back, {{ session.get('user_name') }}! 👋</h1>
+            <p>Manage your job postings and find the right talent for your company.</p>
+        </section>
+
+        <section class="stats">
+
+            <div class="stat-card">
+                <div class="stat-icon">💼</div>
+                <h3>{{ jobs|length }}</h3>
+                <p>Total Jobs Posted</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🟢</div>
+                <h3>{{ jobs|length }}</h3>
+                <p>My Job Listings</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🏢</div>
+                <h3>{{ jobs|map(attribute='company_name')|unique|list|length }}</h3>
+                <p>Companies Added</p>
+            </div>
+
+        </section>
+
+        <div class="section-header">
+            <h2>My Posted Jobs</h2>
+            <a href="{{ url_for('post_job') }}" class="post-btn">＋ Post New Job</a>
+        </div>
+
+        {% if jobs %}
+
+            {% for job in jobs %}
+
+            <div class="job-card">
+
+                <div class="job-top">
+                    <div>
+                        <h3>{{ job.title }}</h3>
+                        <p class="company">
+                            🏢 {{ job.company_name or 'Company' }}
+                        </p>
+                    </div>
+
+                    <span class="status">Published</span>
+                </div>
+
+                <div class="job-info">
+                    <span>📍 {{ job.location }}</span>
+                    <span>💰 {{ job.salary }}</span>
+                    <span>💼 {{ job.job_type }}</span>
+                </div>
+
+                <p class="description">{{ job.description }}</p>
+
+                <div class="job-actions">
+                    <a href="{{ url_for('view_applicants', job_id=job.id) }}"
+                       class="applicants-btn">
+                        👥 View Applicants →
+                    </a>
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty">
+                <h3>📋 No Jobs Posted Yet</h3>
+                <p>Start hiring by publishing your first job opening.</p>
+                <a href="{{ url_for('post_job') }}" class="post-btn">Post Your First Job</a>
+            </div>
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+</body>
+</html>
