@@ -1,16 +1,18 @@
+```python
 import os
+import uuid
+import logging
+import time
+
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import mysql.connector
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+
 import cloudinary
 import cloudinary.uploader
 import cloudinary.utils
-import os
-import uuid
-import logging
-import time
 
 load_dotenv()
 
@@ -198,7 +200,7 @@ def register():
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
-        role = request.form.get("role", "candidate")
+        role = request.form.get("role", "candidate").strip().lower()
 
         if not name or not email or not password:
             flash("Please fill all required fields.")
@@ -219,20 +221,19 @@ def register():
             connection = get_db()
             cursor = connection.cursor()
 
+            hashed_password = generate_password_hash(password)
+
             cursor.execute(
                 """
                 INSERT INTO users (name, email, password, role)
                 VALUES (%s, %s, %s, %s)
                 """,
-                (
-                    name,
-                    email,
-                    generate_password_hash(password),
-                    role
-                )
+                (name, email, hashed_password, role)
             )
 
             connection.commit()
+
+            logger.info("New user registered successfully: %s", email)
 
             flash("Registration successful! Please login.")
             return redirect(url_for("login"))
@@ -1042,3 +1043,4 @@ def update_application_status(application_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+```
