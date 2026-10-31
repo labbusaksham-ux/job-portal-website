@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -187,6 +187,7 @@
 <div class="container">
 
     <h1>Candidate Profile</h1>
+
     <p class="subtitle">
         Complete your profile to apply for jobs and help recruiters understand your skills.
     </p>
@@ -266,6 +267,7 @@
 
             <div class="field full">
                 <label>Upload Resume (PDF only)</label>
+
                 <input type="file"
                        name="resume"
                        accept=".pdf,application/pdf">
@@ -274,11 +276,13 @@
                     Upload your resume in PDF format. Maximum file size: 5 MB.
                 </span>
 
-                {% if profile and profile.resume_filename %}
+                {% if profile and (profile.resume_public_id or profile.resume_filename) %}
                     <div class="existing-resume">
                         Existing Resume:
-                        <a href="{{ url_for('static', filename='resumes/' ~ profile.resume_filename) }}"
-                           target="_blank">
+
+                        <a href="{{ url_for('my_resume') }}"
+                           target="_blank"
+                           rel="noopener noreferrer">
                             View Resume
                         </a>
                     </div>
@@ -302,3 +306,4 @@
 
 </body>
 </html>
+```

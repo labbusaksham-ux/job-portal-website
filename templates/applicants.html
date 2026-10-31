@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -206,6 +206,10 @@
             font-weight: bold;
         }
 
+        .resume-btn:hover {
+            background: #115e59;
+        }
+
         .no-resume {
             color: #dc2626;
             font-size: 13px;
@@ -408,11 +412,12 @@
 
             <div class="resume-section">
 
-                {% if applicant.resume_filename %}
+                {% if applicant.resume_url %}
 
                     <a class="resume-btn"
-                       href="{{ url_for('static', filename='resumes/' ~ applicant.resume_filename) }}"
-                       target="_blank">
+                       href="{{ applicant.resume_url }}"
+                       target="_blank"
+                       rel="noopener noreferrer">
                         📄 View / Download Resume
                     </a>
 
@@ -447,3 +452,4 @@
 
 </body>
 </html>
+```
