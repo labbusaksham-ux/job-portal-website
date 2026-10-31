@@ -4,34 +4,53 @@ import mysql.connector
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+import cloudinary
+import cloudinary.uploader
+import cloudinary.utils
 import os
 import uuid
+import logging
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "job-portal-secret-key")
+app.secret_key = os.getenv("SECRET_KEY")
 
 app.config.update(
     SESSION_PERMANENT=False,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=False,
+    SESSION_COOKIE_SECURE=True,
     SESSION_REFRESH_EACH_REQUEST=False,
     MAX_CONTENT_LENGTH=5 * 1024 * 1024
 )
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "resumes")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Cloudinary Configuration
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
 
 
 # Database Connection
 def get_db():
     return mysql.connector.connect(
         host=os.getenv("DB_HOST"),
+        port=int(os.getenv("DB_PORT", "22718")),
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME")
+        database=os.getenv("DB_NAME"),
+        connection_timeout=15,
+        ssl_disabled=False,
+        autocommit=False
     )
 
 
@@ -56,6 +75,48 @@ def candidate_required():
     return None
 
 
+# Cloudinary Resume Upload
+def upload_resume(resume, user_id):
+    if not resume or not resume.filename:
+        return None
+
+    if not resume.filename.lower().endswith(".pdf"):
+        raise ValueError("Only PDF resume files are allowed.")
+
+    safe_name = secure_filename(resume.filename)
+    if not safe_name:
+        raise ValueError("Invalid resume filename.")
+
+    if resume.mimetype not in ("application/pdf", "application/octet-stream"):
+        raise ValueError("Please upload a valid PDF file.")
+
+    public_id = f"job_portal/resumes/{user_id}_{uuid.uuid4().hex}"
+
+    result = cloudinary.uploader.upload(
+        resume,
+        resource_type="raw",
+        type="authenticated",
+        public_id=public_id,
+        overwrite=False
+    )
+
+    return result["public_id"]
+
+
+# Protected Resume URL
+def get_resume_url(public_id):
+    if not public_id:
+        return None
+
+    return cloudinary.utils.private_download_url(
+        public_id,
+        "pdf",
+        resource_type="raw",
+        type="authenticated",
+        expires_at=3600
+    )
+
+
 # Get Jobs
 def get_jobs(keyword="", location="", job_type=""):
     connection = get_db()
@@ -71,7 +132,6 @@ def get_jobs(keyword="", location="", job_type=""):
             LEFT JOIN companies ON jobs.company_id = companies.id
             WHERE 1=1
         """
-
         values = []
 
         if keyword:
@@ -87,7 +147,6 @@ def get_jobs(keyword="", location="", job_type=""):
             values.append(job_type)
 
         query += " ORDER BY jobs.id DESC"
-
         cursor.execute(query, tuple(values))
         return cursor.fetchall()
 
@@ -136,10 +195,13 @@ def register():
             flash("Invalid account role.")
             return redirect(url_for("register"))
 
-        connection = get_db()
-        cursor = connection.cursor()
+        connection = None
+        cursor = None
 
         try:
+            connection = get_db()
+            cursor = connection.cursor()
+
             cursor.execute(
                 """
                 INSERT INTO users (name, email, password, role)
@@ -153,12 +215,23 @@ def register():
             return redirect(url_for("login"))
 
         except mysql.connector.IntegrityError:
+            if connection:
+                connection.rollback()
             flash("This email is already registered.")
             return redirect(url_for("register"))
 
+        except Exception:
+            if connection:
+                connection.rollback()
+            logger.exception("Registration failed")
+            flash("Registration failed. Please try again later.")
+            return redirect(url_for("register"))
+
         finally:
-            cursor.close()
-            connection.close()
+            if cursor:
+                cursor.close()
+            if connection and connection.is_connected():
+                connection.close()
 
     return render_template("register.html")
 
@@ -173,10 +246,13 @@ def login():
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
 
-        connection = get_db()
-        cursor = connection.cursor(dictionary=True)
+        connection = None
+        cursor = None
 
         try:
+            connection = get_db()
+            cursor = connection.cursor(dictionary=True)
+
             cursor.execute(
                 "SELECT * FROM users WHERE email = %s",
                 (email,)
@@ -186,7 +262,6 @@ def login():
             if user and check_password_hash(user["password"], password):
                 session.clear()
                 session.permanent = False
-
                 session["user_id"] = user["id"]
                 session["user_name"] = user["name"]
                 session["user_role"] = user["role"]
@@ -200,9 +275,15 @@ def login():
 
             flash("Invalid email or password.")
 
+        except Exception:
+            logger.exception("Login failed")
+            flash("Login is temporarily unavailable. Please try again.")
+
         finally:
-            cursor.close()
-            connection.close()
+            if cursor:
+                cursor.close()
+            if connection and connection.is_connected():
+                connection.close()
 
     return render_template("login.html")
 
@@ -235,40 +316,31 @@ def candidate_profile():
                 return redirect(url_for("candidate_profile"))
 
             cursor.execute(
-                "SELECT resume_filename FROM candidate_profiles WHERE user_id = %s",
+                """
+                SELECT resume_filename, resume_public_id
+                FROM candidate_profiles
+                WHERE user_id = %s
+                """,
                 (session["user_id"],)
             )
             old_profile = cursor.fetchone()
 
+            resume_filename = old_profile["resume_filename"] if old_profile else None
+            resume_public_id = old_profile["resume_public_id"] if old_profile else None
+
             resume = request.files.get("resume")
-            resume_filename = (
-                old_profile["resume_filename"] if old_profile else None
-            )
 
             if resume and resume.filename:
-                if not resume.filename.lower().endswith(".pdf"):
-                    flash("Only PDF resume files are allowed.")
-                    return redirect(url_for("candidate_profile"))
-
-                filename = secure_filename(resume.filename)
-
-                if not filename:
-                    flash("Invalid resume filename.")
-                    return redirect(url_for("candidate_profile"))
-
-                resume_filename = (
-                    str(session["user_id"]) + "_" +
-                    uuid.uuid4().hex + ".pdf"
-                )
-
-                resume.save(os.path.join(UPLOAD_FOLDER, resume_filename))
+                resume_public_id = upload_resume(resume, session["user_id"])
+                resume_filename = None
 
             cursor.execute(
                 """
                 INSERT INTO candidate_profiles
                 (user_id, phone, location, qualification, college,
-                 passing_year, skills, experience, resume_filename)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 passing_year, skills, experience, resume_filename,
+                 resume_public_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON DUPLICATE KEY UPDATE
                 phone = VALUES(phone),
                 location = VALUES(location),
@@ -277,12 +349,14 @@ def candidate_profile():
                 passing_year = VALUES(passing_year),
                 skills = VALUES(skills),
                 experience = VALUES(experience),
-                resume_filename = VALUES(resume_filename)
+                resume_filename = VALUES(resume_filename),
+                resume_public_id = VALUES(resume_public_id)
                 """,
                 (
                     session["user_id"], phone, location,
                     qualification, college, passing_year,
-                    skills, experience, resume_filename
+                    skills, experience, resume_filename,
+                    resume_public_id
                 )
             )
 
@@ -298,6 +372,58 @@ def candidate_profile():
 
         return render_template("profile.html", profile=profile)
 
+    except ValueError as error:
+        connection.rollback()
+        flash(str(error))
+        return redirect(url_for("candidate_profile"))
+
+    except Exception:
+        connection.rollback()
+        logger.exception("Profile error")
+        flash("Could not save profile. Please try again.")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("candidate_profile"))
+
+
+# Candidate Resume View
+@app.route("/my-resume")
+def my_resume():
+    if not is_candidate():
+        flash("Please login as a candidate.")
+        return redirect(url_for("login"))
+
+    connection = get_db()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT resume_public_id, resume_filename
+            FROM candidate_profiles
+            WHERE user_id = %s
+            """,
+            (session["user_id"],)
+        )
+        profile = cursor.fetchone()
+
+        if not profile:
+            return "Resume not found.", 404
+
+        if profile.get("resume_public_id"):
+            return redirect(get_resume_url(profile["resume_public_id"]))
+
+        if profile.get("resume_filename"):
+            return redirect(url_for(
+                "static",
+                filename="resumes/" + profile["resume_filename"]
+            ))
+
+        return "Resume not found.", 404
+
     finally:
         cursor.close()
         connection.close()
@@ -308,9 +434,7 @@ def candidate_profile():
 def logout():
     session.clear()
     response = redirect(url_for("login"))
-    response.delete_cookie(
-        app.config.get("SESSION_COOKIE_NAME", "session")
-    )
+    response.delete_cookie(app.config.get("SESSION_COOKIE_NAME", "session"))
     flash("You have been logged out successfully.")
     return response
 
@@ -401,9 +525,9 @@ def post_job():
             flash("Job posted successfully!")
             return redirect(url_for("recruiter_dashboard"))
 
-        except Exception as error:
+        except Exception:
             connection.rollback()
-            print("Job Posting Error:", error)
+            logger.exception("Job posting failed")
             flash("Something went wrong while posting the job.")
             return redirect(url_for("post_job"))
 
@@ -467,7 +591,7 @@ def job_detail(job_id):
     return render_template("job_detail.html", job=job)
 
 
-# Apply Form - GET and POST
+# Apply Form
 @app.route("/apply/<int:job_id>", methods=["GET", "POST"])
 def apply_job(job_id):
     response = candidate_required()
@@ -513,24 +637,18 @@ def apply_job(job_id):
                 flash("You have already applied for this job.")
                 return redirect(url_for("my_applications"))
 
-            user_name = session.get("user_name", "")
-            user_email = ""
-
             cursor.execute(
                 "SELECT email FROM users WHERE id = %s",
                 (session["user_id"],)
             )
             user = cursor.fetchone()
 
-            if user:
-                user_email = user["email"]
-
             return render_template(
                 "apply.html",
                 job=job,
                 profile=profile,
-                user_name=user_name,
-                user_email=user_email
+                user_name=session.get("user_name", ""),
+                user_email=user["email"] if user else ""
             )
 
         phone = request.form.get("phone", "").strip()
@@ -548,29 +666,16 @@ def apply_job(job_id):
             flash("Please complete all required details.")
             return redirect(url_for("apply_job", job_id=job_id))
 
+        resume_filename = profile["resume_filename"] if profile else None
+        resume_public_id = profile["resume_public_id"] if profile else None
+
         resume = request.files.get("resume")
-        resume_filename = (
-            profile["resume_filename"] if profile else None
-        )
 
         if resume and resume.filename:
-            if not resume.filename.lower().endswith(".pdf"):
-                flash("Only PDF resume files are allowed.")
-                return redirect(url_for("apply_job", job_id=job_id))
+            resume_public_id = upload_resume(resume, session["user_id"])
+            resume_filename = None
 
-            safe_name = secure_filename(resume.filename)
-
-            if not safe_name:
-                flash("Invalid resume filename.")
-                return redirect(url_for("apply_job", job_id=job_id))
-
-            resume_filename = (
-                str(session["user_id"]) + "_" +
-                uuid.uuid4().hex + ".pdf"
-            )
-            resume.save(os.path.join(UPLOAD_FOLDER, resume_filename))
-
-        if not resume_filename:
+        if not resume_public_id and not resume_filename:
             flash("Please upload your PDF resume.")
             return redirect(url_for("apply_job", job_id=job_id))
 
@@ -578,8 +683,9 @@ def apply_job(job_id):
             """
             INSERT INTO candidate_profiles
             (user_id, phone, location, qualification, college,
-             passing_year, skills, experience, resume_filename)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+             passing_year, skills, experience, resume_filename,
+             resume_public_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
             phone = VALUES(phone),
             location = VALUES(location),
@@ -588,12 +694,14 @@ def apply_job(job_id):
             passing_year = VALUES(passing_year),
             skills = VALUES(skills),
             experience = VALUES(experience),
-            resume_filename = VALUES(resume_filename)
+            resume_filename = VALUES(resume_filename),
+            resume_public_id = VALUES(resume_public_id)
             """,
             (
                 session["user_id"], phone, location,
                 qualification, college, passing_year,
-                skills, experience, resume_filename
+                skills, experience, resume_filename,
+                resume_public_id
             )
         )
 
@@ -622,9 +730,14 @@ def apply_job(job_id):
         flash("Your application has been submitted successfully!")
         return redirect(url_for("my_applications"))
 
-    except Exception as error:
+    except ValueError as error:
         connection.rollback()
-        print("Application Error:", error)
+        flash(str(error))
+        return redirect(url_for("apply_job", job_id=job_id))
+
+    except Exception:
+        connection.rollback()
+        logger.exception("Application failed")
         flash("Could not submit your application. Please try again.")
         return redirect(url_for("job_detail", job_id=job_id))
 
@@ -706,7 +819,8 @@ def view_applicants(job_id):
                    candidate_profiles.passing_year,
                    candidate_profiles.skills,
                    candidate_profiles.experience,
-                   candidate_profiles.resume_filename
+                   candidate_profiles.resume_filename,
+                   candidate_profiles.resume_public_id
             FROM applications
             JOIN users ON applications.user_id = users.id
             LEFT JOIN candidate_profiles
@@ -717,6 +831,18 @@ def view_applicants(job_id):
             (job_id,)
         )
         applicants = cursor.fetchall()
+
+        for applicant in applicants:
+            applicant["resume_url"] = None
+            if applicant.get("resume_public_id"):
+                applicant["resume_url"] = get_resume_url(
+                    applicant["resume_public_id"]
+                )
+            elif applicant.get("resume_filename"):
+                applicant["resume_url"] = url_for(
+                    "static",
+                    filename="resumes/" + applicant["resume_filename"]
+                )
 
     finally:
         cursor.close()
@@ -736,7 +862,6 @@ def view_applicants(job_id):
     methods=["POST"]
 )
 def update_application_status(application_id):
-
     if "user_id" not in session:
         return redirect(url_for("login"))
 
@@ -745,13 +870,7 @@ def update_application_status(application_id):
         return redirect(url_for("home"))
 
     new_status = request.form.get("status", "").strip()
-
-    allowed_statuses = [
-        "Pending",
-        "Shortlisted",
-        "Rejected",
-        "Selected"
-    ]
+    allowed_statuses = ["Pending", "Shortlisted", "Rejected", "Selected"]
 
     if new_status not in allowed_statuses:
         flash("Invalid application status.")
@@ -790,16 +909,12 @@ def update_application_status(application_id):
         )
 
         connection.commit()
-
         flash("Application status updated successfully!")
+        return redirect(url_for("view_applicants", job_id=job_id))
 
-        return redirect(
-            url_for("view_applicants", job_id=job_id)
-        )
-
-    except Exception as error:
+    except Exception:
         connection.rollback()
-        print("Status Update Error:", error)
+        logger.exception("Status update failed")
         flash("Could not update application status.")
         return redirect(url_for("recruiter_dashboard"))
 
