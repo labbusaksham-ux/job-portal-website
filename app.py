@@ -1,8 +1,8 @@
-
 import os
 import uuid
 import logging
 import time
+import secrets
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import mysql.connector
@@ -17,7 +17,9 @@ import cloudinary.utils
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY")
+
+# SECRET_KEY: Use the environment variable, or generate a fallback key.
+app.secret_key = os.getenv("SECRET_KEY") or secrets.token_hex(32)
 
 app.config.update(
     SESSION_PERMANENT=False,
@@ -30,6 +32,12 @@ app.config.update(
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+if not os.getenv("SECRET_KEY"):
+    logger.warning(
+        "SECRET_KEY is not configured. A temporary key is being used. "
+        "Set SECRET_KEY in Render Environment for persistent sessions."
+    )
 
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "resumes")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
